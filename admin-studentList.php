@@ -9,15 +9,30 @@ if (!isset($_SESSION['admin_id'])) {
 
 if (isset($_GET['delete_id'])) {
     $delete_id = intval($_GET['delete_id']);
-    $del_query = "DELETE FROM students WHERE id = $1";
-    $del_result = pg_query_params($con, $del_query, [$delete_id]);
-    if ($del_result) {
-        header("Location: admin-studentList.php");
-        exit;
+
+    $del_courses_query = "DELETE FROM student_courses WHERE student_id = $1";
+    $del_courses_result = pg_query_params($con, $del_courses_query, [$delete_id]);
+
+    $del_homework_query = "DELETE FROM homework_submissions WHERE student_id = $1";
+    $del_homework_result = pg_query_params($con, $del_homework_query, [$delete_id]);
+
+    if ($del_courses_result && $del_homework_result) {
+
+        $del_student_query = "DELETE FROM students WHERE id = $1";
+        $del_student_result = pg_query_params($con, $del_student_query, [$delete_id]);
+
+        if ($del_student_result) {
+            header("Location: admin-studentList.php");
+            exit;
+        } else {
+            $error = "An error occurred while deleting the student.";
+        }
     } else {
-        $error = "An error occurred while deleting the student.";
+        $error = "An error occurred while deleting the student's related records.";
     }
 }
+
+
 
 $error = "";
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
